@@ -38,7 +38,7 @@ real_keywords <-
   )
 
 
-all_keywords <- unique(append(taggedkeywords, rakedkeywords))
+all_keywords <- unique(append(real_keywords, rakedkeywords))
 
 
 
@@ -59,7 +59,15 @@ naivegraph <-
     min_occ = 2
   )
 
-plot_network(graph = naivegraph)
+library(ggraph)
+
+ggraph(naivegraph, layout="stress") +
+  coord_fixed() +
+  expand_limits(x=c(-3, 3)) +
+  geom_edge_link(aes(alpha=weight)) +
+  geom_node_point(shape="circle filled", fill="white") +
+  geom_node_text(aes(label=name), hjust="outward", check_overlap=TRUE) +
+  guides(edge_alpha= "none")
 
 
 par(las = 1)
@@ -76,7 +84,7 @@ cutoff <-
   litsearchr::find_cutoff(
     naivegraph,
     method = "cumulative",
-    percent = .80,
+    percent = .5,
     imp_method = "strength"
   )
 
@@ -84,3 +92,10 @@ reducedgraph <-
   litsearchr::reduce_graph(naivegraph, cutoff_strength = cutoff[1])
 
 searchterms <- litsearchr::get_keywords(reducedgraph)
+
+
+#write a csv with terms to sort - need to do (undergrad?)
+
+write.csv(searchterms, "./ecotype_resto_search_terms.csv")
+
+
